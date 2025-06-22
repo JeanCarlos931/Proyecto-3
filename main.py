@@ -12,12 +12,12 @@ from tkinter import filedialog, simpledialog, messagebox
 import os
 
 # Importaciones de módulos propios
-from huffman_codificador import (
+from codificador import (
     codificar_mensaje, 
     analizar_compresion, 
     obtener_estadisticas_codificacion
 )
-from huffman_decodificador import (
+from decodificador import (
     decodificar_archivo, 
     validar_archivo, 
     analizar_archivo
@@ -45,7 +45,7 @@ class VisualizadorHuffman:
         # Botones de control
         self.boton_iniciar = tk.Button(
             frame_controles, 
-            text="▶ Iniciar Animación", 
+            text="Iniciar Animación", 
             command=self.iniciar_animacion,
             bg='#4CAF50',
             fg='white',
@@ -54,39 +54,16 @@ class VisualizadorHuffman:
         )
         self.boton_iniciar.pack(side=tk.LEFT, padx=(0, 10))
         
-        self.boton_pausar = tk.Button(
+        self.boton_salir = tk.Button(
             frame_controles, 
-            text="⏸ Pausar", 
-            command=self.pausar_animacion,
-            bg='#FF9800',
-            fg='white',
-            font=("Arial", 12),
-            width=10,
-            state=tk.DISABLED
-        )
-        self.boton_pausar.pack(side=tk.LEFT, padx=(0, 10))
-        
-        self.boton_reiniciar = tk.Button(
-            frame_controles, 
-            text="🔄 Reiniciar", 
-            command=self.reiniciar_animacion,
-            bg='#2196F3',
-            fg='white',
-            font=("Arial", 12),
-            width=10
-        )
-        self.boton_reiniciar.pack(side=tk.LEFT, padx=(0, 10))
-        
-        self.boton_limpiar = tk.Button(
-            frame_controles, 
-            text="🗑 Limpiar", 
+            text="Salir", 
             command=self.limpiar_visualizacion,
             bg='#F44336',
             fg='white',
             font=("Arial", 12),
             width=10
         )
-        self.boton_limpiar.pack(side=tk.LEFT)
+        self.boton_salir.pack(side=tk.LEFT)
         
         # Frame para el canvas
         frame_canvas = tk.Frame(frame_principal)
@@ -155,7 +132,7 @@ class VisualizadorHuffman:
         # Calcular posición inicial
         x_inicial = canvas_width // 2
         y_inicial = 50
-        separacion_inicial = min(canvas_width // 4, 300)
+        separacion_inicial = min(canvas_width // 6, 200)
         
         self._dibujar_nodo(self.raiz, x_inicial, y_inicial, separacion_inicial)
 
@@ -193,7 +170,7 @@ class VisualizadorHuffman:
         )
         
         # Conexiones a hijos
-        nueva_separacion = separacion * 0.6
+        nueva_separacion = separacion * 0.5
         nueva_y = y + 100
         
         if nodo.izquierda:
@@ -279,41 +256,13 @@ class VisualizadorHuffman:
         
         self.animacion_activa = True
         self.boton_iniciar.config(state=tk.DISABLED)
-        self.boton_pausar.config(state=tk.NORMAL)
         self.animar_paso()
-
-    def pausar_animacion(self):
-        """Pausa la animación."""
-        self.animacion_activa = False
-        self.boton_iniciar.config(state=tk.NORMAL)
-        self.boton_pausar.config(state=tk.DISABLED)
-
-    def reiniciar_animacion(self):
-        """Reinicia la animación desde el principio."""
-        self.animacion_activa = False
-        self.bit_index = 0
-        self.mensaje_decodificado = ""
-        self.nodo_actual = self.raiz
-        self.nodos_visitados.clear()
-        self.etiqueta_mensaje.config(text="Mensaje decodificado: ")
-        self.etiqueta_info.config(text="")
-        
-        # Restaurar colores originales
-        self.dibujar_arbol()
-        
-        self.boton_iniciar.config(state=tk.NORMAL)
-        self.boton_pausar.config(state=tk.DISABLED)
-
-    def limpiar_visualizacion(self):
-        """Limpia la visualización y cierra la ventana."""
-        self.ventana.destroy()
 
     def animar_paso(self):
         """Ejecuta un paso de la animación."""
         if not self.animacion_activa or self.bit_index >= len(self.bits):
             self.animacion_activa = False
             self.boton_iniciar.config(state=tk.NORMAL)
-            self.boton_pausar.config(state=tk.DISABLED)
             return
         
         bit = self.bits[self.bit_index]
@@ -346,15 +295,12 @@ class VisualizadorHuffman:
             # Resaltar hoja encontrada
             self.resaltar_nodo(self.nodo_actual, '#4CAF50')  # Verde
             
-            # Limpiar colores del recorrido anterior
-            self.limpiar_colores_recorrido()
-            
-            # Reiniciar para el siguiente carácter
-            self.nodo_actual = self.raiz
-        
-        # Programar siguiente paso
-        if self.animacion_activa:
-            self.ventana.after(500, self.animar_paso)
+            # Esperar 1 segundo antes de limpiar y continuar
+            self.ventana.after(1000, self.continuar_despues_hoja)
+        else:
+            # Si no es hoja, continuar inmediatamente
+            if self.animacion_activa:
+                self.ventana.after(500, self.animar_paso)
 
     def resaltar_nodo(self, nodo, color):
         """Resalta un nodo con el color especificado."""
@@ -382,6 +328,22 @@ class VisualizadorHuffman:
                 x, y, text=texto, font=("Arial", 10, "bold"),
                 tags=f"texto_{id(nodo)}"
             )
+
+    def continuar_despues_hoja(self):
+        """Continúa la animación después de encontrar una hoja y esperar 1 segundo."""
+        # Limpiar colores del recorrido anterior
+        self.limpiar_colores_recorrido()
+        
+        # Reiniciar para el siguiente carácter
+        self.nodo_actual = self.raiz
+        
+        # Continuar con el siguiente paso
+        if self.animacion_activa:
+            self.ventana.after(500, self.animar_paso)
+
+    def limpiar_visualizacion(self):
+        """Limpia la visualización y cierra la ventana."""
+        self.ventana.destroy()
 
 # --------------------------------------------------
 # Interfaz principal

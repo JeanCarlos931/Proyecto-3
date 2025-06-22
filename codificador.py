@@ -15,9 +15,7 @@ from collections import defaultdict
 # --------------------------------------------------
 # Estructuras de Datos
 # --------------------------------------------------
-class NodoHuffman:
-    """Representa un nodo en el árbol de Huffman."""
-    __slots__ = ('caracter', 'frecuencia', 'izquierda', 'derecha')
+class NodoArbol:
     
     def __init__(self, caracter, frecuencia):
         self.caracter = caracter
@@ -64,7 +62,7 @@ def construir_arbol(frecuencias):
         return None
     
     # Crear nodos iniciales
-    monticulo = [NodoHuffman(caracter, freq) for caracter, freq in frecuencias.items()]
+    monticulo = [NodoArbol(caracter, freq) for caracter, freq in frecuencias.items()]
     heapq.heapify(monticulo)
     
     # Construir árbol combinando nodos
@@ -73,7 +71,7 @@ def construir_arbol(frecuencias):
         derecha = heapq.heappop(monticulo)
         
         # Crear nodo padre
-        nodo_padre = NodoHuffman(None, izquierda.frecuencia + derecha.frecuencia)
+        nodo_padre = NodoArbol(None, izquierda.frecuencia + derecha.frecuencia)
         nodo_padre.izquierda = izquierda
         nodo_padre.derecha = derecha
         

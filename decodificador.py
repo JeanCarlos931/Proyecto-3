@@ -9,7 +9,7 @@ de archivos .bin usando el algoritmo de Huffman.
 
 import struct
 import os
-from huffman_codificador import NodoHuffman, construir_arbol
+from codificador import NodoArbol, construir_arbol
 
 # --------------------------------------------------
 # Lectura de Archivos
@@ -377,7 +377,7 @@ def mostrar_analisis_archivo(analisis):
 # --------------------------------------------------
 def prueba_decodificacion():
     """Función de prueba para verificar el funcionamiento del módulo."""
-    from huffman_codificador import codificar_mensaje
+    from codificador import codificar_mensaje
     
     mensaje = "HOLA MUNDO"
     archivo_temp = "prueba_decodificacion.bin"
