@@ -1,17 +1,8 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Aplicación Principal - Decodificador Gráfico de Mensajes Huffman
-
-Este archivo contiene la interfaz gráfica y coordina los módulos de codificación
-y decodificación de Huffman.
-"""
-
 import tkinter as tk
 from tkinter import filedialog, simpledialog, messagebox
 import os
 
-# Importaciones de módulos propios
+
 from codificador import (
     codificar_mensaje, 
     analizar_compresion, 
@@ -23,15 +14,13 @@ from decodificador import (
     analizar_archivo
 )
 
-# --------------------------------------------------
-# Visualización gráfica (GUI con Tkinter)
-# --------------------------------------------------
+# Visualización gráfica (Tkinter)
 class VisualizadorHuffman:
     def __init__(self, raiz, bits=""):
         self.raiz = raiz
         self.bits = bits
         self.ventana = tk.Tk()
-        self.ventana.title("Decodificador Gráfico de Huffman")
+        self.ventana.title("The Turing´s Forest")
         self.ventana.geometry("1400x800")
         
         # Frame principal
@@ -54,6 +43,7 @@ class VisualizadorHuffman:
         )
         self.boton_iniciar.pack(side=tk.LEFT, padx=(0, 10))
         
+        # Botones de salida
         self.boton_salir = tk.Button(
             frame_controles, 
             text="Salir", 
@@ -146,9 +136,9 @@ class VisualizadorHuffman:
         
         # Color del nodo
         if nodo.caracter is None:
-            color = '#E3F2FD'  # Azul claro para nodos internos
+            color = "#93D2FF"  # Azul claro para nodos internos
         else:
-            color = '#C8E6C9'  # Verde claro para hojas
+            color = '#9FFFA3'  # Verde claro para hojas
         
         # Dibujar nodo
         self.canvas.create_oval(
@@ -223,9 +213,9 @@ class VisualizadorHuffman:
             
             # Color original del nodo
             if nodo.caracter is None:
-                color = '#E3F2FD'  # Azul claro para nodos internos
+                color = '#93D2FF'  # Azul claro para nodos internos
             else:
-                color = '#C8E6C9'  # Verde claro para hojas
+                color = "#9FFFA3"  # Verde claro para hojas
             
             # Actualizar color del nodo
             self.canvas.delete(f"nodo_{id(nodo)}")
@@ -345,9 +335,9 @@ class VisualizadorHuffman:
         """Limpia la visualización y cierra la ventana."""
         self.ventana.destroy()
 
-# --------------------------------------------------
+
 # Interfaz principal
-# --------------------------------------------------
+
 class InterfazPrincipal:
     def __init__(self):
         self.ventana = tk.Tk()
