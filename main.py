@@ -2,18 +2,6 @@ import tkinter as tk
 from tkinter import filedialog, simpledialog, messagebox
 import os
 
-
-from codificador import (
-    codificar_mensaje, 
-    analizar_compresion, 
-    obtener_estadisticas_codificacion
-)
-from decodificador import (
-    decodificar_archivo, 
-    validar_archivo, 
-    analizar_archivo
-)
-
 # Visualización gráfica (Tkinter)
 class VisualizadorHuffman:
     def __init__(self, raiz, bits=""):
@@ -335,6 +323,16 @@ class VisualizadorHuffman:
         """Limpia la visualización y cierra la ventana."""
         self.ventana.destroy()
 
+from codificador import (
+    codificar_mensaje, 
+    analizar_compresion, 
+    obtener_estadisticas_codificacion
+)
+from decodificador import (
+    decodificar_archivo, 
+    validar_archivo, 
+    analizar_archivo
+)
 
 # Interfaz principal
 
@@ -434,9 +432,6 @@ class InterfazPrincipal:
                     # Mostrar información de la codificación
                     info_text = f"Mensaje codificado exitosamente!\n\n"
                     info_text += f"Archivo guardado: {os.path.basename(archivo)}\n"
-                    info_text += f"Tamaño original: {stats['tamaño_original_bytes']} bytes\n"
-                    info_text += f"Tamaño comprimido: {stats['tamaño_comprimido_bytes']} bytes\n"
-                    info_text += f"Compresión: {stats['compresion_porcentaje']:.1f}%\n\n"
                     info_text += "Códigos generados:\n"
                     
                     for caracter, codigo in sorted(codigos.items()):
@@ -480,9 +475,8 @@ class InterfazPrincipal:
             except Exception as e:
                 messagebox.showerror("Error", f"Error al decodificar el archivo: {str(e)}")
 
-# --------------------------------------------------
+
 # Función principal
-# --------------------------------------------------
 if __name__ == "__main__":
     try:
         InterfazPrincipal()
