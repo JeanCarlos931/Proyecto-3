@@ -9,12 +9,21 @@ sin necesidad de usar la interfaz gráfica.
 
 import os
 import sys
-from main import (
+
+# Importaciones de módulos propios
+from huffman_codificador import (
     calcular_frecuencias, 
     construir_arbol, 
     generar_codigos, 
-    codificar_mensaje, 
-    decodificar_archivo
+    codificar_mensaje,
+    analizar_compresion,
+    obtener_estadisticas_codificacion
+)
+from huffman_decodificador import (
+    decodificar_archivo,
+    validar_archivo,
+    analizar_archivo,
+    mostrar_analisis_archivo
 )
 
 def ejemplo_basico():
@@ -69,20 +78,28 @@ def ejemplo_codificacion_archivo():
     archivo_temp = "mensaje_ejemplo.bin"
     
     try:
-        # Codificar y guardar
-        raiz, codigos, bits = codificar_mensaje(mensaje, archivo_temp)
+        # Codificar y guardar usando el módulo de codificación
+        stats, raiz, codigos, bits = obtener_estadisticas_codificacion(mensaje, archivo_temp)
         
         print(f"\nArchivo guardado: {archivo_temp}")
-        print(f"Tamaño del archivo: {os.path.getsize(archivo_temp)} bytes")
-        print(f"Bits codificados: {len(bits)}")
+        print(f"Tamaño del archivo: {stats['tamaño_archivo']} bytes")
+        print(f"Bits codificados: {stats['bits_codificados']}")
+        print(f"Compresión: {stats['compresion_porcentaje']:.1f}%")
         
-        # Decodificar y verificar
+        # Decodificar y verificar usando el módulo de decodificación
         mensaje_decodificado, raiz_reconstruida, bits_leidos = decodificar_archivo(archivo_temp)
         
         print(f"\nVerificación:")
         print(f"  Mensaje original: '{mensaje}'")
         print(f"  Mensaje decodificado: '{mensaje_decodificado}'")
         print(f"  ¿Coinciden?: {'✅ SÍ' if mensaje == mensaje_decodificado else '❌ NO'}")
+        
+        # Analizar archivo
+        analisis = analizar_archivo(archivo_temp)
+        print(f"\nAnálisis del archivo:")
+        print(f"  Válido: {'✅ SÍ' if analisis['valido'] else '❌ NO'}")
+        print(f"  Caracteres únicos: {analisis['caracteres_unicos']}")
+        print(f"  Longitud del mensaje: {analisis['longitud_mensaje']}")
         
         # Limpiar archivo temporal
         os.remove(archivo_temp)
@@ -175,6 +192,46 @@ def ejemplo_caracteres_especiales():
     print(f"\nSecuencia de bits: {bits}")
     print(f"Longitud de bits: {len(bits)}")
 
+def ejemplo_validacion_archivos():
+    """Ejemplo de validación y análisis de archivos."""
+    print("\n" + "=" * 60)
+    print("EJEMPLO DE VALIDACIÓN Y ANÁLISIS DE ARCHIVOS")
+    print("=" * 60)
+    
+    # Crear archivo de prueba
+    mensaje = "Mensaje de prueba para validación"
+    archivo_temp = "archivo_validacion.bin"
+    
+    try:
+        # Codificar mensaje
+        codificar_mensaje(mensaje, archivo_temp)
+        
+        # Validar archivo
+        validacion = validar_archivo(archivo_temp)
+        print(f"Validación del archivo '{archivo_temp}':")
+        print(f"  Válido: {'✅ SÍ' if validacion['valido'] else '❌ NO'}")
+        if validacion['valido']:
+            print(f"  Tamaño: {validacion['tamaño']} bytes")
+            print(f"  Caracteres únicos: {validacion['caracteres_unicos']}")
+            print(f"  Bits descartados: {validacion['bits_descartados']}")
+        else:
+            print(f"  Error: {validacion['error']}")
+        
+        # Analizar archivo
+        print(f"\nAnálisis detallado:")
+        analisis = analizar_archivo(archivo_temp)
+        if analisis['valido']:
+            mostrar_analisis_archivo(analisis)
+        else:
+            print(f"  Error en análisis: {analisis['error']}")
+        
+        # Limpiar
+        os.remove(archivo_temp)
+        print(f"\nArchivo temporal eliminado: {archivo_temp}")
+        
+    except Exception as e:
+        print(f"Error: {e}")
+
 def mostrar_estadisticas():
     """Muestra estadísticas generales del algoritmo."""
     print("\n" + "=" * 60)
@@ -206,6 +263,12 @@ def mostrar_estadisticas():
        • Datos comprimidos en formato binario
        • Información de bits de relleno
        • Compatible con cualquier tipo de texto
+    
+    🏗️ Arquitectura Modular:
+       • huffman_codificador.py: Funciones de codificación
+       • huffman_decodificador.py: Funciones de decodificación
+       • main.py: Interfaz gráfica y coordinación
+       • ejemplo_uso.py: Ejemplos y demostraciones
     """)
 
 def main():
@@ -220,6 +283,7 @@ def main():
         ejemplo_codificacion_archivo()
         ejemplo_texto_largo()
         ejemplo_caracteres_especiales()
+        ejemplo_validacion_archivos()
         mostrar_estadisticas()
         
         print("\n" + "=" * 60)

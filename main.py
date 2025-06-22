@@ -1,145 +1,27 @@
-import heapq
-import os
-import struct
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Aplicación Principal - Decodificador Gráfico de Mensajes Huffman
+
+Este archivo contiene la interfaz gráfica y coordina los módulos de codificación
+y decodificación de Huffman.
+"""
+
 import tkinter as tk
 from tkinter import filedialog, simpledialog, messagebox
-from collections import defaultdict
-import time
-import math
+import os
 
-# --------------------------------------------------
-# Algoritmo de Huffman
-# --------------------------------------------------
-class NodoHuffman:
-    __slots__ = ('caracter', 'frecuencia', 'izquierda', 'derecha')
-    
-    def __init__(self, caracter, frecuencia):
-        self.caracter = caracter
-        self.frecuencia = frecuencia
-        self.izquierda = None
-        self.derecha = None
-    
-    def __lt__(self, otro):
-        return self.frecuencia < otro.frecuencia
-
-def calcular_frecuencias(mensaje):
-    """Calcula la frecuencia de cada carácter en el mensaje."""
-    frecuencias = defaultdict(int)
-    for caracter in mensaje:
-        frecuencias[caracter] += 1
-    return frecuencias
-
-def construir_arbol(frecuencias):
-    """Construye el árbol de Huffman a partir de las frecuencias."""
-    if not frecuencias:
-        return None
-    
-    monticulo = [NodoHuffman(caracter, freq) for caracter, freq in frecuencias.items()]
-    heapq.heapify(monticulo)
-    
-    while len(monticulo) > 1:
-        izquierda = heapq.heappop(monticulo)
-        derecha = heapq.heappop(monticulo)
-        nodo_padre = NodoHuffman(None, izquierda.frecuencia + derecha.frecuencia)
-        nodo_padre.izquierda = izquierda
-        nodo_padre.derecha = derecha
-        heapq.heappush(monticulo, nodo_padre)
-    
-    return monticulo[0] if monticulo else None
-
-def generar_codigos(raiz, codigo_actual="", codigos=None):
-    """Genera los códigos de Huffman para cada carácter."""
-    if codigos is None:
-        codigos = {}
-    
-    if raiz is None:
-        return {}
-    
-    if raiz.caracter is not None:
-        codigos[raiz.caracter] = codigo_actual
-        return codigos
-    
-    generar_codigos(raiz.izquierda, codigo_actual + "0", codigos)
-    generar_codigos(raiz.derecha, codigo_actual + "1", codigos)
-    
-    return codigos
-
-# --------------------------------------------------
-# Manejo de archivos binarios
-# --------------------------------------------------
-def codificar_mensaje(mensaje, nombre_archivo):
-    """Codifica un mensaje y lo guarda en un archivo .bin."""
-    if not mensaje:
-        raise ValueError("El mensaje no puede estar vacío")
-    
-    frecuencias = calcular_frecuencias(mensaje)
-    raiz = construir_arbol(frecuencias)
-    codigos = generar_codigos(raiz)
-    
-    # Generar secuencia de bits
-    bits = ''.join(codigos[caracter] for caracter in mensaje)
-    
-    with open(nombre_archivo, 'wb') as archivo:
-        # Escribir cantidad de caracteres únicos (4 bytes)
-        archivo.write(struct.pack('>I', len(frecuencias)))
-        
-        # Escribir caracteres y frecuencias (3 bytes cada uno)
-        for caracter, freq in frecuencias.items():
-            archivo.write(struct.pack('>cH', caracter.encode('utf-8'), freq))
-        
-        # Calcular y escribir bits de relleno
-        bits_restantes = len(bits) % 8
-        bits_descartados = (8 - bits_restantes) % 8
-        archivo.write(struct.pack('>B', bits_descartados))
-        
-        # Escribir mensaje codificado en bytes
-        for i in range(0, len(bits), 8):
-            byte = bits[i:i+8].ljust(8, '0')
-            archivo.write(bytes([int(byte, 2)]))
-    
-    return raiz, codigos, bits
-
-def decodificar_archivo(nombre_archivo):
-    """Decodifica un archivo .bin y reconstruye el mensaje original."""
-    with open(nombre_archivo, 'rb') as archivo:
-        # Leer cantidad de caracteres únicos
-        num_caracteres = struct.unpack('>I', archivo.read(4))[0]
-        
-        # Leer caracteres y frecuencias
-        frecuencias = {}
-        for _ in range(num_caracteres):
-            caracter, freq = struct.unpack('>cH', archivo.read(3))
-            frecuencias[caracter.decode('utf-8')] = freq
-        
-        # Leer bits descartados
-        bits_descartados = struct.unpack('>B', archivo.read(1))[0]
-        
-        # Leer datos codificados
-        datos = archivo.read()
-        bits = ''.join(f'{byte:08b}' for byte in datos)
-        
-        # Remover bits de relleno
-        if bits_descartados > 0:
-            bits = bits[:-bits_descartados]
-        
-        # Reconstruir árbol
-        raiz = construir_arbol(frecuencias)
-        
-        # Decodificar mensaje
-        mensaje = []
-        nodo_actual = raiz
-        
-        for bit in bits:
-            if bit == '0':
-                nodo_actual = nodo_actual.izquierda
-            else:
-                nodo_actual = nodo_actual.derecha
-            
-            if nodo_actual.caracter is not None:
-                mensaje.append(nodo_actual.caracter)
-                nodo_actual = raiz
-        
-        return ''.join(mensaje), raiz, bits
+# Importaciones de módulos propios
+from huffman_codificador import (
+    codificar_mensaje, 
+    analizar_compresion, 
+    obtener_estadisticas_codificacion
+)
+from huffman_decodificador import (
+    decodificar_archivo, 
+    validar_archivo, 
+    analizar_archivo
+)
 
 # --------------------------------------------------
 # Visualización gráfica (GUI con Tkinter)
@@ -507,7 +389,7 @@ class VisualizadorHuffman:
 class InterfazPrincipal:
     def __init__(self):
         self.ventana = tk.Tk()
-        self.ventana.title("Decodificador Gráfico de Mensajes - Huffman")
+        self.ventana.title("The Turing's Forest")
         self.ventana.geometry("700x500")
         self.ventana.configure(bg='#f5f5f5')
         
@@ -521,7 +403,7 @@ class InterfazPrincipal:
             text="🌳🌳🌳 The Turing's Forest 🌳🌳🌳", 
             font=("Arial", 24, "bold"),
             bg='#f5f5f5',
-            fg='#1976D2'
+            fg="#1DD401"
         )
         titulo.pack(pady=(0, 40))
         
@@ -532,7 +414,7 @@ class InterfazPrincipal:
         # Botón para codificar
         boton_codificar = tk.Button(
             frame_botones, 
-            text="📝 Codificar Mensaje", 
+            text="Codificar Mensaje", 
             command=self.codificar_mensaje,
             width=25, height=3,
             font=("Arial", 14, "bold"),
@@ -546,7 +428,7 @@ class InterfazPrincipal:
         # Botón para decodificar
         boton_decodificar = tk.Button(
             frame_botones, 
-            text="🔍 Decodificar Archivo", 
+            text="Decodificar Archivo", 
             command=self.decodificar_archivo,
             width=25, height=3,
             font=("Arial", 14, "bold"),
@@ -560,7 +442,7 @@ class InterfazPrincipal:
         # Botón para salir
         boton_salir = tk.Button(
             frame_botones, 
-            text="🚪 Salir", 
+            text="Salir", 
             command=self.ventana.quit,
             width=25, height=2,
             font=("Arial", 12),
@@ -594,14 +476,15 @@ class InterfazPrincipal:
             
             if archivo:
                 try:
-                    raiz, codigos, bits = codificar_mensaje(mensaje, archivo)
+                    # Usar función del módulo de codificación
+                    stats, raiz, codigos, bits = obtener_estadisticas_codificacion(mensaje, archivo)
                     
                     # Mostrar información de la codificación
                     info_text = f"Mensaje codificado exitosamente!\n\n"
                     info_text += f"Archivo guardado: {os.path.basename(archivo)}\n"
-                    info_text += f"Tamaño original: {len(mensaje)} caracteres\n"
-                    info_text += f"Tamaño codificado: {len(bits)} bits ({len(bits)//8 + 1} bytes)\n"
-                    info_text += f"Compresión: {((1 - (len(bits)//8 + 1) / len(mensaje)) * 100):.1f}%\n\n"
+                    info_text += f"Tamaño original: {stats['tamaño_original_bytes']} bytes\n"
+                    info_text += f"Tamaño comprimido: {stats['tamaño_comprimido_bytes']} bytes\n"
+                    info_text += f"Compresión: {stats['compresion_porcentaje']:.1f}%\n\n"
                     info_text += "Códigos generados:\n"
                     
                     for caracter, codigo in sorted(codigos.items()):
@@ -621,6 +504,13 @@ class InterfazPrincipal:
         
         if archivo:
             try:
+                # Validar archivo primero
+                validacion = validar_archivo(archivo)
+                if not validacion['valido']:
+                    messagebox.showerror("Error", f"Archivo inválido: {validacion['error']}")
+                    return
+                
+                # Usar función del módulo de decodificación
                 mensaje, raiz, bits = decodificar_archivo(archivo)
                 
                 # Mostrar mensaje decodificado
