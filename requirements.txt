@@ -1,0 +1,24 @@
+# Decodificador Gráfico de Mensajes - Huffman
+# Requisitos del proyecto
+
+# Tkinter (incluido en Python estándar, pero listado para referencia)
+# tkinter
+
+# Bibliotecas estándar de Python (no requieren instalación)
+# heapq
+# struct
+# collections
+# os
+# time
+# math
+
+# No se requieren dependencias externas adicionales
+# El proyecto utiliza solo bibliotecas estándar de Python
+
+# Versión mínima de Python recomendada
+# Python >= 3.6
+
+# Para desarrollo (opcional)
+# pytest>=6.0.0
+# black>=21.0.0
+# flake8>=3.8.0 
