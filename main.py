@@ -2,9 +2,34 @@ import tkinter as tk
 from tkinter import filedialog, simpledialog, messagebox
 import os
 
-# Visualización gráfica (Tkinter)
 class VisualizadorHuffman:
-    def __init__(self, raiz, bits=""):
+    """
+    Clase para visualizar la decodificación de Huffman paso a paso.
+    
+    Esta clase crea una interfaz gráfica que muestra el árbol de Huffman
+    y anima el proceso de decodificación bit por bit.
+    
+    Attributes:
+        raiz: Raíz del árbol de Huffman
+        bits: Secuencia de bits a decodificar
+        ventana: Ventana principal de tkinter
+        canvas: Canvas para dibujar el árbol
+        animacion_activa: Estado de la animación
+        bit_index: Índice del bit actual
+        mensaje_decodificado: Mensaje decodificado hasta el momento
+        nodo_actual: Nodo actual en el recorrido
+        posiciones: Diccionario de posiciones de nodos
+        nodos_visitados: Lista de nodos visitados en el recorrido actual
+    """
+    
+    def __init__(self, raiz, bits: str = "") -> None:
+        """
+        Inicializa el visualizador de Huffman.
+        
+        Args:
+            raiz: Raíz del árbol de Huffman
+            bits: Secuencia de bits a decodificar
+        """
         self.raiz = raiz
         self.bits = bits
         self.ventana = tk.Tk()
@@ -92,8 +117,10 @@ class VisualizadorHuffman:
         
         self.ventana.mainloop()
 
-    def dibujar_arbol(self):
-        """Dibuja el árbol de Huffman en el canvas."""
+    def dibujar_arbol(self) -> None:
+        """
+        Dibuja el árbol de Huffman en el canvas.
+        """
         self.canvas.delete("all")
         self.posiciones = {}
         
@@ -114,8 +141,16 @@ class VisualizadorHuffman:
         
         self._dibujar_nodo(self.raiz, x_inicial, y_inicial, separacion_inicial)
 
-    def _dibujar_nodo(self, nodo, x, y, separacion):
-        """Dibuja recursivamente un nodo y sus hijos."""
+    def _dibujar_nodo(self, nodo, x: int, y: int, separacion: int) -> None:
+        """
+        Dibuja recursivamente un nodo y sus hijos.
+        
+        Args:
+            nodo: Nodo a dibujar
+            x: Posición x del nodo
+            y: Posición y del nodo
+            separacion: Separación entre nodos hijos
+        """
         if nodo is None:
             return
         
@@ -183,18 +218,30 @@ class VisualizadorHuffman:
             )
             self._dibujar_nodo(nodo.derecha, x_der, nueva_y, nueva_separacion)
 
-    def redimensionar_arbol(self, event=None):
-        """Redimensiona el árbol cuando cambia el tamaño del canvas."""
+    def redimensionar_arbol(self, event=None) -> None:
+        """
+        Redimensiona el árbol cuando cambia el tamaño del canvas.
+        
+        Args:
+            event: Evento de redimensionamiento (opcional)
+        """
         self.dibujar_arbol()
 
-    def limpiar_colores_recorrido(self):
-        """Limpia los colores de todos los nodos visitados en el recorrido actual."""
+    def limpiar_colores_recorrido(self) -> None:
+        """
+        Limpia los colores de todos los nodos visitados en el recorrido actual.
+        """
         for nodo in self.nodos_visitados:
             self.restaurar_color_nodo(nodo)
         self.nodos_visitados.clear()
 
-    def restaurar_color_nodo(self, nodo):
-        """Restaura el color original de un nodo."""
+    def restaurar_color_nodo(self, nodo) -> None:
+        """
+        Restaura el color original de un nodo.
+        
+        Args:
+            nodo: Nodo cuyo color se debe restaurar
+        """
         if nodo in self.posiciones:
             x, y = self.posiciones[nodo]
             radio = 25
@@ -226,8 +273,10 @@ class VisualizadorHuffman:
                 tags=f"texto_{id(nodo)}"
             )
 
-    def iniciar_animacion(self):
-        """Inicia la animación de decodificación paso a paso."""
+    def iniciar_animacion(self) -> None:
+        """
+        Inicia la animación de decodificación paso a paso.
+        """
         if not self.bits:
             messagebox.showwarning("Advertencia", "No hay bits para decodificar")
             return
@@ -236,8 +285,10 @@ class VisualizadorHuffman:
         self.boton_iniciar.config(state=tk.DISABLED)
         self.animar_paso()
 
-    def animar_paso(self):
-        """Ejecuta un paso de la animación."""
+    def animar_paso(self) -> None:
+        """
+        Ejecuta un paso de la animación.
+        """
         if not self.animacion_activa or self.bit_index >= len(self.bits):
             self.animacion_activa = False
             self.boton_iniciar.config(state=tk.NORMAL)
@@ -280,8 +331,14 @@ class VisualizadorHuffman:
             if self.animacion_activa:
                 self.ventana.after(500, self.animar_paso)
 
-    def resaltar_nodo(self, nodo, color):
-        """Resalta un nodo con el color especificado."""
+    def resaltar_nodo(self, nodo, color: str) -> None:
+        """
+        Resalta un nodo con el color especificado.
+        
+        Args:
+            nodo: Nodo a resaltar
+            color: Color para resaltar el nodo
+        """
         if nodo in self.posiciones:
             x, y = self.posiciones[nodo]
             radio = 25
@@ -307,8 +364,10 @@ class VisualizadorHuffman:
                 tags=f"texto_{id(nodo)}"
             )
 
-    def continuar_despues_hoja(self):
-        """Continúa la animación después de encontrar una hoja y esperar 1 segundo."""
+    def continuar_despues_hoja(self) -> None:
+        """
+        Continúa la animación después de encontrar una hoja y esperar 1 segundo.
+        """
         # Limpiar colores del recorrido anterior
         self.limpiar_colores_recorrido()
         
@@ -319,8 +378,10 @@ class VisualizadorHuffman:
         if self.animacion_activa:
             self.ventana.after(500, self.animar_paso)
 
-    def limpiar_visualizacion(self):
-        """Limpia la visualización y cierra la ventana."""
+    def limpiar_visualizacion(self) -> None:
+        """
+        Limpia la visualización y cierra la ventana.
+        """
         self.ventana.destroy()
 
 from codificador import (
@@ -334,10 +395,22 @@ from decodificador import (
     analizar_archivo
 )
 
-# Interfaz principal
 
 class InterfazPrincipal:
-    def __init__(self):
+    """
+    Clase principal para la interfaz gráfica del programa.
+    
+    Esta clase maneja la interfaz principal que permite al usuario
+    codificar mensajes y decodificar archivos.
+    
+    Attributes:
+        ventana: Ventana principal de tkinter
+    """
+    
+    def __init__(self) -> None:
+        """
+        Inicializa la interfaz principal.
+        """
         self.ventana = tk.Tk()
         self.ventana.title("The Turing's Forest")
         self.ventana.geometry("700x500")
@@ -405,8 +478,10 @@ class InterfazPrincipal:
         
         self.ventana.mainloop()
     
-    def codificar_mensaje(self):
-        """Permite al usuario codificar un mensaje."""
+    def codificar_mensaje(self) -> None:
+        """
+        Permite al usuario codificar un mensaje.
+        """
         mensaje = simpledialog.askstring(
             "Codificar Mensaje", 
             "Ingrese el mensaje a codificar:",
@@ -426,10 +501,7 @@ class InterfazPrincipal:
             
             if archivo:
                 try:
-                    # Usar función del módulo de codificación
                     stats, raiz, codigos, bits = obtener_estadisticas_codificacion(mensaje, archivo)
-                    
-                    # Mostrar información de la codificación
                     info_text = f"Mensaje codificado exitosamente!\n\n"
                     info_text += f"Archivo guardado: {os.path.basename(archivo)}\n"
                     info_text += "Códigos generados:\n"
@@ -442,8 +514,10 @@ class InterfazPrincipal:
                 except Exception as e:
                     messagebox.showerror("Error", f"Error al codificar el mensaje: {str(e)}")
     
-    def decodificar_archivo(self):
-        """Permite al usuario decodificar un archivo."""
+    def decodificar_archivo(self) -> None:
+        """
+        Permite al usuario decodificar un archivo.
+        """
         archivo = filedialog.askopenfilename(
             filetypes=[("Archivos binarios", "*.bin"), ("Todos los archivos", "*.*")],
             title="Seleccionar archivo para decodificar"
@@ -451,16 +525,12 @@ class InterfazPrincipal:
         
         if archivo:
             try:
-                # Validar archivo primero
                 validacion = validar_archivo(archivo)
                 if not validacion['valido']:
                     messagebox.showerror("Error", f"Archivo inválido: {validacion['error']}")
                     return
                 
-                # Usar función del módulo de decodificación
                 mensaje, raiz, bits = decodificar_archivo(archivo)
-                
-                # Mostrar mensaje decodificado
                 messagebox.showinfo(
                     "Decodificación Exitosa", 
                     f"Archivo decodificado exitosamente!\n\n"
@@ -468,15 +538,11 @@ class InterfazPrincipal:
                     f"Longitud: {len(mensaje)} caracteres\n"
                     f"Bits procesados: {len(bits)}"
                 )
-                
-                # Abrir visualizador
                 VisualizadorHuffman(raiz, bits)
                 
             except Exception as e:
                 messagebox.showerror("Error", f"Error al decodificar el archivo: {str(e)}")
-
-
-# Función principal
+                
 if __name__ == "__main__":
     try:
         InterfazPrincipal()

@@ -1,62 +1,69 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Módulo de Codificación Huffman
-
-Este módulo contiene todas las funcionalidades relacionadas con la codificación
-de mensajes usando el algoritmo de Huffman.
-"""
-
 import heapq
 import struct
 import os
 from collections import defaultdict
 
-# --------------------------------------------------
-# Estructuras de Datos
-# --------------------------------------------------
+
 class NodoArbol:
+    """
+    Representa un nodo en el árbol de Huffman.
     
-    def __init__(self, caracter, frecuencia):
+    Attributes:
+        caracter (str): El carácter almacenado en el nodo (None para nodos internos)
+        frecuencia (int): Frecuencia del carácter o suma de frecuencias de hijos
+        izquierda (NodoArbol): Hijo izquierdo del nodo
+        derecha (NodoArbol): Hijo derecho del nodo
+    """
+    
+    def __init__(self, caracter: str, frecuencia: int) -> None:
+        """
+        Inicializa un nodo del árbol de Huffman.
+        
+        Args:
+            caracter: El carácter almacenado en el nodo (None para nodos internos)
+            frecuencia: Frecuencia del carácter o suma de frecuencias de hijos
+        """
         self.caracter = caracter
         self.frecuencia = frecuencia
         self.izquierda = None
         self.derecha = None
     
-    def __lt__(self, otro):
-        """Permite comparar nodos por frecuencia para el heap."""
+    def __lt__(self, otro: 'NodoArbol') -> bool:
+        """
+        Permite comparar nodos por frecuencia para el heap.
+        
+        Args:
+            otro: Otro nodo para comparar
+            
+        Returns:
+            True si este nodo tiene menor frecuencia que el otro
+        """
         return self.frecuencia < otro.frecuencia
 
-# --------------------------------------------------
-# Funciones de Análisis
-# --------------------------------------------------
-def calcular_frecuencias(mensaje):
+def calcular_frecuencias(mensaje: str) -> defaultdict:
     """
     Calcula la frecuencia de cada carácter en el mensaje.
     
     Args:
-        mensaje (str): El mensaje a analizar
+        mensaje: El mensaje a analizar
         
     Returns:
-        defaultdict: Diccionario con caracteres como claves y frecuencias como valores
+        Diccionario con caracteres como claves y frecuencias como valores
     """
     frecuencias = defaultdict(int)
     for caracter in mensaje:
         frecuencias[caracter] += 1
     return frecuencias
 
-# --------------------------------------------------
-# Construcción del Árbol
-# --------------------------------------------------
-def construir_arbol(frecuencias):
+def construir_arbol(frecuencias: dict) -> NodoArbol:
     """
     Construye el árbol de Huffman a partir de las frecuencias.
     
     Args:
-        frecuencias (dict): Diccionario de frecuencias de caracteres
+        frecuencias: Diccionario de frecuencias de caracteres
         
     Returns:
-        NodoHuffman: Raíz del árbol construido, o None si no hay frecuencias
+        Raíz del árbol construido, o None si no hay frecuencias
     """
     if not frecuencias:
         return None
@@ -79,20 +86,17 @@ def construir_arbol(frecuencias):
     
     return monticulo[0] if monticulo else None
 
-# --------------------------------------------------
-# Generación de Códigos
-# --------------------------------------------------
-def generar_codigos(raiz, codigo_actual="", codigos=None):
+def generar_codigos(raiz: NodoArbol, codigo_actual: str = "", codigos: dict = None) -> dict:
     """
     Genera los códigos de Huffman para cada carácter.
     
     Args:
-        raiz (NodoHuffman): Raíz del árbol de Huffman
-        codigo_actual (str): Código binario actual (para recursión)
-        codigos (dict): Diccionario de códigos (para recursión)
+        raiz: Raíz del árbol de Huffman
+        codigo_actual: Código binario actual (para recursión)
+        codigos: Diccionario de códigos (para recursión)
         
     Returns:
-        dict: Diccionario con caracteres como claves y códigos binarios como valores
+        Diccionario con caracteres como claves y códigos binarios como valores
     """
     if codigos is None:
         codigos = {}
@@ -111,19 +115,16 @@ def generar_codigos(raiz, codigo_actual="", codigos=None):
     
     return codigos
 
-# --------------------------------------------------
-# Codificación de Mensaje
-# --------------------------------------------------
-def codificar_mensaje(mensaje, nombre_archivo):
+def codificar_mensaje(mensaje: str, nombre_archivo: str) -> tuple:
     """
     Codifica un mensaje y lo guarda en un archivo .bin.
     
     Args:
-        mensaje (str): El mensaje a codificar
-        nombre_archivo (str): Ruta del archivo donde guardar
+        mensaje: El mensaje a codificar
+        nombre_archivo: Ruta del archivo donde guardar
         
     Returns:
-        tuple: (raiz_arbol, codigos, bits_codificados)
+        Tupla con (raiz_arbol, codigos, bits_codificados)
         
     Raises:
         ValueError: Si el mensaje está vacío
@@ -132,54 +133,42 @@ def codificar_mensaje(mensaje, nombre_archivo):
     if not mensaje:
         raise ValueError("El mensaje no puede estar vacío")
     
-    # Paso 1: Calcular frecuencias
     frecuencias = calcular_frecuencias(mensaje)
-    
-    # Paso 2: Construir árbol
+
     raiz = construir_arbol(frecuencias)
     
-    # Paso 3: Generar códigos
     codigos = generar_codigos(raiz)
     
-    # Paso 4: Codificar mensaje
     bits = ''.join(codigos[caracter] for caracter in mensaje)
     
-    # Paso 5: Guardar en archivo
     with open(nombre_archivo, 'wb') as archivo:
-        # Escribir cantidad de caracteres únicos (4 bytes)
         archivo.write(struct.pack('>I', len(frecuencias)))
         
-        # Escribir caracteres y frecuencias (3 bytes cada uno)
         for caracter, freq in frecuencias.items():
             archivo.write(struct.pack('>cH', caracter.encode('utf-8'), freq))
         
-        # Calcular y escribir bits de relleno
         bits_restantes = len(bits) % 8
         bits_descartados = (8 - bits_restantes) % 8
         archivo.write(struct.pack('>B', bits_descartados))
         
-        # Escribir mensaje codificado en bytes
         for i in range(0, len(bits), 8):
             byte = bits[i:i+8].ljust(8, '0')
             archivo.write(bytes([int(byte, 2)]))
     
     return raiz, codigos, bits
 
-# --------------------------------------------------
-# Funciones de Análisis y Estadísticas
-# --------------------------------------------------
-def analizar_compresion(mensaje, codigos):
+def analizar_compresion(mensaje: str, codigos: dict) -> dict:
     """
     Analiza la compresión obtenida con los códigos de Huffman.
     
     Args:
-        mensaje (str): Mensaje original
-        codigos (dict): Códigos de Huffman generados
+        mensaje: Mensaje original
+        codigos: Códigos de Huffman generados
         
     Returns:
-        dict: Estadísticas de compresión
+        Diccionario con estadísticas de compresión
     """
-    bits_original = len(mensaje) * 8  # ASCII
+    bits_original = len(mensaje) * 8  
     bits_comprimido = sum(len(codigos[caracter]) for caracter in mensaje)
     bytes_comprimido = (bits_comprimido // 8) + 1
     
@@ -192,21 +181,20 @@ def analizar_compresion(mensaje, codigos):
         'ratio_compresion': (bits_original // 8) / bytes_comprimido
     }
 
-def obtener_estadisticas_codificacion(mensaje, nombre_archivo):
+def obtener_estadisticas_codificacion(mensaje: str, nombre_archivo: str) -> tuple:
     """
     Obtiene estadísticas completas de la codificación.
     
     Args:
-        mensaje (str): Mensaje original
-        nombre_archivo (str): Archivo donde se guardó
+        mensaje: Mensaje original
+        nombre_archivo: Archivo donde se guardó
         
     Returns:
-        dict: Estadísticas completas
+        Tupla con (estadisticas, raiz_arbol, codigos, bits)
     """
-    # Realizar codificación
+
     raiz, codigos, bits = codificar_mensaje(mensaje, nombre_archivo)
     
-    # Obtener estadísticas
     stats = analizar_compresion(mensaje, codigos)
     stats['archivo'] = nombre_archivo
     stats['tamaño_archivo'] = os.path.getsize(nombre_archivo)
@@ -215,26 +203,23 @@ def obtener_estadisticas_codificacion(mensaje, nombre_archivo):
     
     return stats, raiz, codigos, bits
 
-# --------------------------------------------------
-# Funciones de Utilidad
-# --------------------------------------------------
-def mostrar_codigos(codigos):
+def mostrar_codigos(codigos: dict) -> None:
     """
     Muestra los códigos generados de forma ordenada.
     
     Args:
-        codigos (dict): Códigos de Huffman
+        codigos: Códigos de Huffman
     """
     print("Códigos de Huffman generados:")
     for caracter, codigo in sorted(codigos.items()):
         print(f"  '{caracter}': {codigo}")
 
-def mostrar_estadisticas(stats):
+def mostrar_estadisticas(stats: dict) -> None:
     """
     Muestra las estadísticas de compresión.
     
     Args:
-        stats (dict): Estadísticas de compresión
+        stats: Estadísticas de compresión
     """
     print(f"\nEstadísticas de compresión:")
     print(f"  Tamaño original: {stats['tamaño_original_bytes']} bytes")
@@ -242,37 +227,3 @@ def mostrar_estadisticas(stats):
     print(f"  Compresión: {stats['compresion_porcentaje']:.1f}%")
     print(f"  Ratio de compresión: {stats['ratio_compresion']:.2f}:1")
 
-# --------------------------------------------------
-# Función de Prueba
-# --------------------------------------------------
-def prueba_codificacion():
-    """Función de prueba para verificar el funcionamiento del módulo."""
-    mensaje = "HOLA MUNDO"
-    archivo_temp = "prueba_codificacion.bin"
-    
-    try:
-        print("=== PRUEBA DE CODIFICACIÓN ===")
-        print(f"Mensaje: '{mensaje}'")
-        
-        # Codificar
-        raiz, codigos, bits = codificar_mensaje(mensaje, archivo_temp)
-        
-        # Mostrar resultados
-        mostrar_codigos(codigos)
-        stats = analizar_compresion(mensaje, codigos)
-        mostrar_estadisticas(stats)
-        
-        print(f"Archivo guardado: {archivo_temp}")
-        
-        # Limpiar
-        if os.path.exists(archivo_temp):
-            os.remove(archivo_temp)
-            
-        return True
-        
-    except Exception as e:
-        print(f"Error en prueba: {e}")
-        return False
-
-if __name__ == "__main__":
-    prueba_codificacion() 
